@@ -22,9 +22,12 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.example.android.pets.data.PetContract.PetEntry;
+
+import java.util.Objects;
 
 /**
  * {@link ContentProvider} for Pets app.
@@ -32,7 +35,7 @@ import com.example.android.pets.data.PetContract.PetEntry;
 public class PetProvider extends ContentProvider {
 
     /** Tag for the log messages */
-    public static final String LOG_TAG = PetProvider.class.getSimpleName();
+    private static final String LOG_TAG = PetProvider.class.getSimpleName();
 
     /** URI matcher code for the content URI for the pets table */
     private static final int PETS = 100;
@@ -78,8 +81,13 @@ public class PetProvider extends ContentProvider {
     }
 
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
-                        String sortOrder) {
+    public Cursor query(
+            @NonNull Uri uri,
+            String[] projection,
+            String selection,
+            String[] selectionArgs,
+            String sortOrder) {
+
         // Get readable database
         SQLiteDatabase database = mDbHelper.getReadableDatabase();
 
@@ -120,14 +128,14 @@ public class PetProvider extends ContentProvider {
         // Set notification URI on the Cursor,
         // so we know what content URI the Cursor was created for.
         // If the data at this URI changes, then we know we need to update the Cursor.
-        cursor.setNotificationUri(getContext().getContentResolver(), uri);
+        cursor.setNotificationUri(Objects.requireNonNull(getContext()).getContentResolver(), uri);
 
         // Return the cursor
         return cursor;
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues contentValues) {
+    public Uri insert(@NonNull Uri uri, ContentValues contentValues) {
         final int match = sUriMatcher.match(uri);
         switch (match) {
             case PETS:
@@ -174,15 +182,19 @@ public class PetProvider extends ContentProvider {
         }
 
         // Notify all listeners that the data has changed for the pet content URI
-        getContext().getContentResolver().notifyChange(uri, null);
+        Objects.requireNonNull(getContext()).getContentResolver().notifyChange(uri, null);
 
         // Return the new URI with the ID (of the newly inserted row) appended at the end
         return ContentUris.withAppendedId(uri, id);
     }
 
     @Override
-    public int update(Uri uri, ContentValues contentValues, String selection,
-                      String[] selectionArgs) {
+    public int update(
+            @NonNull Uri uri,
+            ContentValues contentValues,
+            String selection,
+            String[] selectionArgs) {
+
         final int match = sUriMatcher.match(uri);
         switch (match) {
             case PETS:
@@ -249,7 +261,7 @@ public class PetProvider extends ContentProvider {
         // If 1 or more rows were updated, then notify all listeners that the data at the
         // given URI has changed
         if (rowsUpdated != 0) {
-            getContext().getContentResolver().notifyChange(uri, null);
+            Objects.requireNonNull(getContext()).getContentResolver().notifyChange(uri, null);
         }
 
         // Return the number of rows updated
@@ -257,7 +269,7 @@ public class PetProvider extends ContentProvider {
     }
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
+    public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
         // Get writeable database
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
@@ -283,7 +295,7 @@ public class PetProvider extends ContentProvider {
         // If 1 or more rows were deleted, then notify all listeners that the data at the
         // given URI has changed
         if (rowsDeleted != 0) {
-            getContext().getContentResolver().notifyChange(uri, null);
+            Objects.requireNonNull(getContext()).getContentResolver().notifyChange(uri, null);
         }
 
         // Return the number of rows deleted
@@ -291,7 +303,7 @@ public class PetProvider extends ContentProvider {
     }
 
     @Override
-    public String getType(Uri uri) {
+    public String getType(@NonNull Uri uri) {
         final int match = sUriMatcher.match(uri);
         switch (match) {
             case PETS:
